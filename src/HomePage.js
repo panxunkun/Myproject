@@ -290,13 +290,43 @@
                            console.log(Weight);
                            //  very     more or less
                            let S1,S2;
-                           if(Number(b)<=0){
-                              
+                           let B = (Number(System_a_cut)-1+Numer(Weight))/Number(Weight);
+                           let S1,S2;
+                           let ExtendNumber=[];
+                           let Operator=[];
+                           Operator.push(">=");
+                           Operator.push("<=");
+                           if(QueryArray[i].FuzzyDegree==="more or less"){
+                                S2=Number(d)-(Number(d)-Number(c))*Math.pow(Number(B),2);
+                                if(Number(a)>=0){
+                                   S1=Number(a)+(Number(b)-Number(a))*Math.pow(Number(B),2);
+                                }
+                                else{
+                                   S1=0;
+                                }
+                           }
+                           else if(QueryArray[i].FuzzyDegree==="very"){
+                                S2=Number(d)-(Number(d)-Number(c))*Math.sqrt(Number(B));
+                                if(Number(a)>=0){
+                                   S1=Number(a)+(Number(b)-Number(a))*Math.sqrt(Number(B));
+                                }
+                                else{
+                                   S1=0;
+                                }
                            }
                            else{
-                           
+                                S2=Number(d)-(Number(d)-Number(c))*B;
+                                if(Number(a)>=0){
+                                   S1=Number(a)+(Number(b)-Number(a))*B;
+                                }
+                                else{
+                                   S1=0;
+                                }
                            }
-                        
+                           ExtendNumber.push(S1);
+                           ExtendNumber.push(S1);
+                           QueryArray[i].QueryNumber=ExtendNumber;
+                           QueryArray[i].Operator=Operator;
                         }
                     }
                 }
