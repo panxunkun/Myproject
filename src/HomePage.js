@@ -63,9 +63,15 @@
             console.log(Direction_Satisfaction);
             return Direction_Satisfaction;
         },
-        FindInFuzzyTerm:function(NodeName){
+        FindInFuzzyTerm:function(NodeName,QueryNumber){
             let FuzzyTerms=[];
-            let jsonExp='$["FuzzyTerm"]["fterm"][?(@["leaf_node"]=="'+NodeName+'")]';
+            let jsonExp;
+            if(QueryNumber===undefined){
+                jsonExp='$["FuzzyTerm"]["fterm"][?(@["leaf_node"]=="'+NodeName+'")]';
+            }
+            else{
+                jsonExp='$["FuzzyTerm"]["fterm"][?(@["leaf_node"]=="'+NodeName+'"&&@["fuzzy_term"]=="'+QueryNumber+'")]'
+            }
             FuzzyTerms=this.QueryInJSON(this.FuzzyTermJSON,jsonExp);
             console.log(FuzzyTerms);
             return FuzzyTerms;
@@ -95,6 +101,8 @@
             let Section_Check=new RegExp("(~|之间)");
             let Number_Check=new RegExp("[0-9]+","g");
             let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重)");
+            let Very_Check=new RegExp("");// very
+            let More_or_Less_Check = new RegExp("");//more or less;
             let Not_Check=new RegExp("[/不]");
             //查询条件处理
             for(let QueryNum=0;QueryNum<QueryArray.length;QueryNum++){
@@ -125,7 +133,16 @@
                   Query.QueryNumber=fuzzy_num;
                   Query.NumberType="fuzzy"
                 }
-              QueryArray[QueryNum]=Query;
+                if(Very_Check.test(QueryArray[QueryNum])===true){
+                  Query.FuzzyDegree="very";
+                }
+                else if(More_or_Less_Check.test(QueryArray[QueryNum])===true){
+                  Query.FuzzyDegree="more or less";
+                }
+                else{
+                  Query.FuzzyDegree="normal";
+                }
+                QueryArray[QueryNum]=Query;
             }
             let js_string;
             let json=new Array();
@@ -203,7 +220,7 @@
                         let Num=[];
                         let FindCheck=false;
                         let Y=QueryArray[i].QueryNumber;
-                        fterm=this.FindInFuzzyTerm(QueryArray[i].JSONLocation.Node);
+                        fterm=this.FindInFuzzyTerm(QueryArray[i].JSONLocation.Node,undefined);
                         for(let j=0;j<fterm.length;j++){
                            console.log(fterm[j],Y);
                            if(Number(fterm[j].para[1])===Number(Y[0])&&Number(fterm[j].para[2])===Number(Y[1])){
@@ -250,6 +267,37 @@
                         console.log(QueryArray[i]);
                         console.log(ExtendNumber);
 
+                    }
+                    // 3
+                    if(QueryArray[i].QueryType==="query"){
+                        if(QueryArray[i].NumberType==="fuzzy"){
+                           let fterm=[];
+                           fterm=this.FindInFuzzyTermJSON(QueryArray[i].JSONLocation.Node,QueryArray[i].QueryNumber);
+                           let a,b,c,d;
+                           a=fterm.para[0];
+                           b=fterm.para[1];
+                           c=fterm.para[2];
+                           d=fterm.para[3];
+                           let Noderelax=this.FindInNodeRelax(QueryArray[i].JSONLocation.Node);
+                           console.log(Noderelax);
+                           let Weight;
+                           if(Noderelax[0].nimp==="medium"){
+                              Weight=0.5;
+                           }
+                           else if(Noderelax[0].nimp==="high"){
+                              Weight=0.8;
+                           }
+                           console.log(Weight);
+                           //  very     more or less
+                           let S1,S2;
+                           if(Number(b)<=0){
+                              
+                           }
+                           else{
+                           
+                           }
+                        
+                        }
                     }
                 }
                 //将 操作数与操作关系转换成 JSONPath表达式 （精确模式）  //普通查询的Operator ==
