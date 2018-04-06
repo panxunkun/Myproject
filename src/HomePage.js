@@ -173,6 +173,17 @@ export default {
                 for(let i=0;i<QueryArray.length;i++){
                     //隶属函数形状确定
                     let System_a_cut=0.8;
+                    let Noderelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
+                    console.log(Noderelax);
+                    let Weight;
+                    if(Noderelax[0].nimp==="medium"){
+                           Weight=0.5;
+                    }
+                    else if(Noderelax[0].nimp==="high"){
+                           Weight=0.8;
+                    }
+                    console.log(Weight);
+                        
                     if(QueryArray[i].QueryType==="at most"){
                         let degrel;
                         let Direction_and_Satisfaction=this.FindInRelaxationJSON(QueryArray[i].JSONLocation.Node,QueryArray[i].QueryType);
@@ -198,9 +209,7 @@ export default {
                         let ldegrel=Direction_and_Satisfaction[0].ldegrel;
                         let rdegrel=Direction_and_Satisfaction[0].rdegrel;
                         let ExtendNumber=[];
-                        let Operator=[];
-                        Operator.push(">=");
-                        Operator.push("<=");
+                        let Operator=[">=","<="];
                         if(Direction_and_Satisfaction[0].directionrel=== "left,right"){
                             ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1-Number(ldegrel)*Number(Math.sqrt((1-Number(System_a_cut))/Number(System_a_cut)))));
                             ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1+Number(rdegrel)*Number(Math.sqrt((1-Number(System_a_cut))/Number(System_a_cut)))));
@@ -244,27 +253,14 @@ export default {
                             c=Number(Y[1]);
                             d=Number(Y[1])*(1+Number(System_a_cut));
                         }
-                        console.log(a,b,c,d);
-                        let Noderelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
-                        console.log(Noderelax);
-                        let Weight;
-                        if(Noderelax[0].nimp==="medium"){
-                            Weight=0.5;
-                        }
-                        else if(Noderelax[0].nimp==="high"){
-                            Weight=0.8;
-                        }
-                        console.log(Weight);
                         let S1=Number(a)+(Number(System_a_cut)+Number(Weight)-1)*(Number(b)-Number(a))/Number(Weight);
                         let S2=Number(d)+(1-Number(System_a_cut)-Number(Weight))*(Number(d)-Number(c))/Number(Weight);
                         console.log(S1,S2);
                         let ExtendNumber=[];
                         ExtendNumber.push(S1);
                         ExtendNumber.push(S2);
-                        let Operator=[];
-                        Operator.push(">=");
-                        Operator.push("<=");
-                        QueryArray[i].QueryNumber=ExtendNumber;
+                        let Operator=[">=","<="];
+                                                QueryArray[i].QueryNumber=ExtendNumber;
                         QueryArray[i].Operator=Operator;
                         console.log(QueryArray[i]);
                         console.log(ExtendNumber);
@@ -281,23 +277,12 @@ export default {
                             b=fterm[0].para[1];
                             c=fterm[0].para[2];
                             d=fterm[0].para[3];
-                            let Noderelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
-                            console.log(Noderelax);
-                            let Weight;
-                            if(Noderelax[0].nimp==="medium"){
-                                Weight=0.5;
-                            }
-                            else if(Noderelax[0].nimp==="high"){
-                                Weight=0.8;
-                            }
-                            console.log(Weight);
                             //  very     more or less
                             let S1,S2;
                             let B = (Number(System_a_cut)-1+Number(Weight))/Number(Weight);
                             let ExtendNumber=[];
-                            let Operator=[];
-                            Operator.push(">=");
-                            Operator.push("<=");
+                            let Operator=[">=","<="];
+                    
                             if(QueryArray[i].FuzzyDegree==="more or less"){
                                 S2=Number(d)-(Number(d)-Number(c))*Math.pow(Number(B),2);
                                 if(Number(a)>=0){
