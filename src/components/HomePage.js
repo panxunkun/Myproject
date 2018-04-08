@@ -210,17 +210,28 @@ export default {
                         let rdegrel=Direction_and_Satisfaction[0].rdegrel;
                         let ExtendNumber=[];
                         let Operator=[">=","<="];
+                        // Fuzzy Degree
+                        let A_cut;
+                        if(QueryArray[i].FuzzyDegree==="very"){
+                            A_cut=Math.sqrt(Number(System_a_cut));
+                        }
+                        else if(QueryArray[i].FuzzyDegree==="more or less"){
+                            A_cut=Math.pow(Number(System_a_cut),2);
+                        }
+                        else if(QueryArray[i].FuzzyDegree==="normal"){
+                            A_cut=Number(System_a_cut);
+                        }
                         if(Direction_and_Satisfaction[0].directionrel=== "left,right"){
-                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1-Number(ldegrel)*Number(Math.sqrt((1-Number(System_a_cut))/Number(System_a_cut)))));
-                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1+Number(rdegrel)*Number(Math.sqrt((1-Number(System_a_cut))/Number(System_a_cut)))));
+                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1-Number(ldegrel)*Number(Math.sqrt((1-Number(A_cut))/Number(A_cut)))));
+                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1+Number(rdegrel)*Number(Math.sqrt((1-Number(A_cut))/Number(A_cut)))));
                         }
                         else if(Direction_and_Satisfaction[0].directionrel=== "left"){
-                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1-Number(ldegrel)*Number(Math.sqrt((1-Number(System_a_cut))/Number(System_a_cut)))));
+                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1-Number(ldegrel)*Number(Math.sqrt((1-Number(A_cut))/Number(A_cut)))));
                             ExtendNumber.push(Number(QueryArray[i].QueryNumber));
                         }
                         else if(Direction_and_Satisfaction[0].directionrel=== "right"){
                             ExtendNumber.push(Number(QueryArray[i].QueryNumber));
-                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1+Number(rdegrel)*Number(Math.sqrt((1-Number(System_a_cut))/Number(System_a_cut)))));
+                            ExtendNumber.push(Number(QueryArray[i].QueryNumber)*(1+Number(rdegrel)*Number(Math.sqrt((1-Number(A_cut))/Number(A_cut)))));
                         }
                         QueryArray[i].QueryNumber=ExtendNumber;
                         QueryArray[i].Operator=Operator;
@@ -266,7 +277,7 @@ export default {
                         console.log(ExtendNumber);
 
                     }
-                    // 3
+                    //
                     if(QueryArray[i].QueryType==="query"){
                         if(QueryArray[i].NumberType==="fuzzy"){
                             let fterm=[];
@@ -282,35 +293,24 @@ export default {
                             let B = (Number(System_a_cut)-1+Number(Weight))/Number(Weight);
                             let ExtendNumber=[];
                             let Operator=[">=","<="];
-                    
+                            let Degree_B;
                             if(QueryArray[i].FuzzyDegree==="more or less"){
-                                S2=Number(d)-(Number(d)-Number(c))*Math.pow(Number(B),2);
-                                if(Number(a)>=0){
-                                    S1=Number(a)+(Number(b)-Number(a))*Math.pow(Number(B),2);
-                                }
-                                else{
-                                    S1=0;
-                                }
+                                Degree_B=Math.pow(Number(B),2);
+                               
                             }
                             else if(QueryArray[i].FuzzyDegree==="very"){
-                                S2=Number(d)-(Number(d)-Number(c))*Math.sqrt(Number(B));
-                                if(Number(a)>=0){
-                                    S1=Number(a)+(Number(b)-Number(a))*Math.sqrt(Number(B));
-                                }
-                                else{
-                                    S1=0;
-                                }
+                                Degree_B=Math.sqrt(Number(B));
                             }
                             else{
-                                S2=Number(d)-(Number(d)-Number(c))*B;
-                                if(Number(a)>=0){
-                                    S1=Number(a)+(Number(b)-Number(a))*B;
-                                }
-                                else{
-                                    S1=0;
-                                }
+                                Degree_B=Number(B);
                             }
-                            console.log(ExtendNumber);
+                            S2=Number(d)-(Number(d)-Number(c))*Degree_B;
+                            if(Number(a)>=0){
+                                S1=Number(a)+(Number(b)-Number(a))*Degree_B;
+                            }
+                            else{
+                                S1=0;
+                            }
                             ExtendNumber.push(S1);
                             ExtendNumber.push(S2);
                             QueryArray[i].QueryNumber=ExtendNumber;
