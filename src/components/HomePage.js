@@ -1,6 +1,25 @@
 <template>
     <div class="main" v-model="GetKBJSON">
         <el-input v-model="Input" placeholder="输入查询内容" class="input_text" @keyup.enter.native="GetResult"></el-input>
+    <el-table
+    :data="tableData"
+    border
+    style="width: 100%">
+    <el-table-column
+        prop="date"
+        label="日期"
+        width="180">
+    </el-table-column>
+    <el-table-column
+        prop="name"
+        label="姓名"
+        width="180">
+    </el-table-column>
+    <el-table-column
+        prop="address"
+        label="地址">
+    </el-table-column>
+</el-table>
 </div>
 </template>
 
@@ -15,7 +34,9 @@ export default {
             Input:'',
             RelaxationJOSN:'',
             FuzzyTermJSON:'',
-            NodeRelaxJSON:''
+            NodeRelaxJSON:'',
+            DataJSON:'',
+            tableData: []
         }
     },
     methods:{
@@ -85,8 +106,8 @@ export default {
             return Noderelax;
         },
         QueryInJSON:function (js,jsonExp) {
-            let QueryResult = jp.query(js,jsonExp);
-            return QueryResult;
+            let RetureQueryResult = jp.query(js,jsonExp);
+            return RetureQueryResult;
         },
         GetResult(){
             //处理模糊条件
@@ -101,7 +122,8 @@ export default {
             let Most_Check=new RegExp("(最多|至多|顶多|不超过)");
             let Least_Check=new RegExp("(最少|至少)");
             let Section_Check=new RegExp("(~|之间)");
-            let Number_Check=new RegExp("[0-9]+","g");
+//              let Number_Check=new RegExp("[+-]?(0|([1-9]\d*))(\.\d+)?","g");
+            let Number_Check=new RegExp("[0-9]+(\.[0-9]+)?","g");
             let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重)");
             let Very_Check=new RegExp("(非常)");// very
             let More_or_Less_Check = new RegExp("(较)");//more or less;
@@ -150,16 +172,16 @@ export default {
             let json=new Array();
 
             //本地JSON文件模拟访问后台JSON文件
-            this.$http.get('/api/json_data').then(response => {
+            this.$http.get('./static/JSONData.json').then(response => {
                 //json字符串转换成json对象
-                json.push(response.data.data);
-                js_string=JSON.stringify(json);
-                let js=JSON.parse(js_string);
+                this.DataJSON=response.data;
 
-                //console.log(js[0]);
-                this.FindJsonKey(js[0],0);
+                this.FindJsonKey(this.DataJSON,0);
                 let jsonObject=[];
                 jsonObject=JSONObject;
+
+
+                console.log(QueryArray);
                 //将用户输入的查询条件转换成 操作数与操作关系
                 for(let i=0; i<QueryArray.length;i++){
                     for(let j=0;j<jsonObject.length;j++){
@@ -173,17 +195,19 @@ export default {
                 for(let i=0;i<QueryArray.length;i++){
                     //隶属函数形状确定
                     let System_a_cut=0.8;
-                    let Noderelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
-                    console.log(Noderelax);
-                    let Weight;
-                    if(Noderelax[0].nimp==="medium"){
-                           Weight=0.5;
+                    let NodeRelax=[];
+                    NodeRelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
+                    if(NodeRelax.length!==0) {
+                        let Weight;
+                        if (NodeRelax[0].nimp === "medium") {
+                            Weight = 0.5;
+                        }
+                        else if (NodeRelax[0].nimp === "high") {
+                            Weight = 0.8;
+                        }
+
                     }
-                    else if(Noderelax[0].nimp==="high"){
-                           Weight=0.8;
-                    }
-                    console.log(Weight);
-                        
+
                     if(QueryArray[i].QueryType==="at most"){
                         let degrel;
                         let Direction_and_Satisfaction=this.FindInRelaxationJSON(QueryArray[i].JSONLocation.Node,QueryArray[i].QueryType);
@@ -271,7 +295,7 @@ export default {
                         ExtendNumber.push(S1);
                         ExtendNumber.push(S2);
                         let Operator=[">=","<="];
-                                                QueryArray[i].QueryNumber=ExtendNumber;
+                        QueryArray[i].QueryNumber=ExtendNumber;
                         QueryArray[i].Operator=Operator;
                         console.log(QueryArray[i]);
                         console.log(ExtendNumber);
@@ -296,7 +320,7 @@ export default {
                             let Degree_B;
                             if(QueryArray[i].FuzzyDegree==="more or less"){
                                 Degree_B=Math.pow(Number(B),2);
-                               
+
                             }
                             else if(QueryArray[i].FuzzyDegree==="very"){
                                 Degree_B=Math.sqrt(Number(B));
@@ -316,38 +340,47 @@ export default {
                             QueryArray[i].QueryNumber=ExtendNumber;
                             QueryArray[i].Operator=Operator;
                         }
+                        else if(QueryArray[i].NumberType==="number"){
+                            QueryArray[i].Operator="==";
+                        }
                     }
                 }
+
                 //将 操作数与操作关系转换成 JSONPath表达式 （精确模式）  //普通查询的Operator ==
                 for(let i=0;i<QueryArray.length;i++){
                     let pathExp;
                     if(QueryArray[i].QueryNumber.length>1){
-                        pathExp='["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator[0]+QueryArray[i].QueryNumber[0]+'&&@'+'["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator[1]+QueryArray[i].QueryNumber[1];
+                        pathExp='["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator[0]+'"'+QueryArray[i].QueryNumber[0]+'"'+'&&@'+'["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator[1]+'"'+QueryArray[i].QueryNumber[1]+'"';
                     }
                     else{
-                        pathExp='["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator+QueryArray[i].QueryNumber;
+                        pathExp='["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator+'"'+QueryArray[i].QueryNumber+'"';
                     }
-                    let ParentNode;
+                    let ParentNode=[];
+
                     for(let j=0;j<jsonObject.length;j++){
                         if(QueryArray[i].JSONLocation.parentID===jsonObject[j].ID){
                             ParentNode=jsonObject[j];
                         }
                     }
+
                     while(ParentNode.ID!==1){
+
                         pathExp='["'+ParentNode.Node+'"]'+pathExp;
                         for(let k=0;k<jsonObject.length;k++){
+
                             if(ParentNode.parentID===jsonObject[k].ID){
                                 ParentNode=jsonObject[k];
                             }
                         }
                     }
+
                     QueryArray[i].PathExp=pathExp;
-                    //console.log(pathExp);
+
+
                 }
 
-
                 //获取JSONPath查询的表达式
-                let pathExpression='$[0]["'+jsonObject[0].Node+'"]["'+jsonObject[1].Node+'"][?('+'@'+QueryArray[0].PathExp;
+                let pathExpression='$["'+jsonObject[0].Node+'"]["'+jsonObject[1].Node+'"][?('+'@'+QueryArray[0].PathExp;
                 for(let i=1;i<QueryArray.length;i++){
                     pathExpression+='&&@'+QueryArray[i].PathExp;
                 }
@@ -355,11 +388,19 @@ export default {
 
                 console.log(pathExpression);
                 //JSONPath查询并返回结果
-                let result =this.QueryInJSON(js,pathExpression);
+                let result =this.QueryInJSON(this.DataJSON,pathExpression);
+
+
+
                 console.log(result);
+                //缓存初始化
+                JSONObject.splice(0,JSONObject.length);
+                jsonObject.splice(0,jsonObject.length);
+                NodeId=0;
+
 
             }, response => {
-                console.log('数据加载失败')
+                console.log('get DataJSON fail !');
             })
 
 
