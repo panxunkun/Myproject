@@ -1,50 +1,188 @@
 <template>
     <div class="main" v-model="GetKBJSON">
         <el-input v-model="Input" placeholder="输入查询内容" class="input_text" @keyup.enter.native="GetResult"></el-input>
-    <el-table
-    :data="tableData"
-    border
-    style="width: 100%">
-    <el-table-column
-        prop="date"
-        label="日期"
-        width="180">
-    </el-table-column>
-    <el-table-column
-        prop="name"
-        label="姓名"
-        width="180">
-    </el-table-column>
-    <el-table-column
-        prop="address"
-        label="地址">
-    </el-table-column>
+    <el-table :data="TableData" border style="width: 100%" >
+    <template v-for="item in TableHead">
+        <TableHeadConfig v-if="item.children&&item.children.length>0" :model="item"></TableHeadConfig>
+    <el-table-column v-else  :key="item.name" :label="item.name" :prop="item.dataIndex" >
+</el-table-column>
+</template>
 </el-table>
 </div>
 </template>
 
 <script>
 import {jsonPath} from "../../static/jsonpath"
+import TableHeadConfig from './TabelHeadConfig.vue';
 let jp = require("jsonpath");
 let JSONObject = new Array();
 let NodeId=0;
 export default {
+    components:{
+        TableHeadConfig
+    },
     data(){
         return {
-            Input:'',
-            RelaxationJOSN:'',
-            FuzzyTermJSON:'',
-            NodeRelaxJSON:'',
-            DataJSON:'',
-            tableData: []
+            Input: '',
+            RelaxationJOSN: '',
+            FuzzyTermJSON: '',
+            NodeRelaxJSON: '',
+            DataJSON: '',
+            TableData: [],
+            TableHead: [],
+            Res: [],
+            headerData: [
+                {
+                    name: '日期',
+                    dataIndex: 'date',
+                    children: []
+                },
+                {
+                    name: '配置信息',
+                    dataIndex: '',
+                    children: [
+                        {
+                            name: 'man',
+                            dataIndex: '',
+                            children: [
+                                {
+                                    name: '性别',
+                                    dataIndex: "男人.性别",
+                                    children: []
+                                },
+                                {
+                                    name: '年龄',
+                                    dataIndex: '男人.年龄',
+                                    children: []
+                                }
+                            ]
+                        },
+                        {
+                            name: '最终地址',
+                            dataIndex: '',
+                            children: [
+                                {
+                                    name: '省份',
+                                    dataIndex: 'province',
+                                    children: [
+                                        {
+                                            name: '省份1',
+                                            dataIndex: 'province',
+                                            children: []
+                                        },
+                                        {
+                                            name: '省份2',
+                                            dataIndex: 'province',
+                                            children: []
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: '市区',
+                                    dataIndex: 'city',
+                                    children: []
+                                },
+                                {
+                                    name: '地址',
+                                    dataIndex: 'address',
+                                    children: []
+                                },
+                                {
+                                    name: '邮编',
+                                    dataIndex: 'zip',
+                                    children: []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+
+            tableData3: [{
+                date: '2016-05-03',
+                "男人":
+                    {
+                        "性别": '男',
+                        "年龄": 18,
+                    }
+                ,
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }, {
+                date: '2016-05-02',
+                name: '王小虎',
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }, {
+                date: '2016-05-04',
+                name: '王小虎',
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }, {
+                date: '2016-05-01',
+                name: '王小虎',
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }, {
+                date: '2016-05-08',
+                name: '王小虎',
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }, {
+                date: '2016-05-06',
+                name: '王小虎',
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }, {
+                date: '2016-05-07',
+                name: '王小虎',
+                province: '上海',
+                city: '普陀区',
+                address: '上海市普陀区金沙江路 1518 弄',
+                zip: 200333
+            }],
+            data4:[
+                {
+                    "注册公司信息库": {
+                        "公司信息": [
+                            {
+                                "公司名": "南航",
+                                "年龄": 88,
+                                "地址": {
+                                    "街道": 20,
+                                    "城市": "江苏苏州",
+                                    "国家": "中国"
+                                },
+                                "链接": {
+                                    "名称": "Google",
+                                    "网址": 30
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
         }
+
     },
     methods:{
         //获取用户输入的模糊查询
         FindJsonKey:function (json,parentId) {
 
             let current;
-            if(Object.prototype.toString.call(json)==='[object Object]'){
+            if(Object.prototype.toString.call(json)==='[object Object]'&&Object.prototype.toString.call(json)!=='[object String]'&&Object.prototype.toString.call(json)!=='[object Number]'){
                 for( let i in json){
                     let obj1={};
                     current=NodeId++;
@@ -55,7 +193,7 @@ export default {
                     this.FindJsonKey(json[i],current);
                 }
             }
-            else {
+            else if(Object.prototype.toString.call(json)==='[object Array]'&&Object.prototype.toString.call(json)!=='[object String]'&&Object.prototype.toString.call(json)!=='[object Number]'){
                 for(let j in json[0]){
                     let obj2={};
                     current=NodeId++;
@@ -63,12 +201,13 @@ export default {
                     obj2.Node=j;
                     obj2.parentID=parentId;
                     JSONObject.push(obj2);
-                    //console.log(Object.prototype.toString.call(json[0][j]));
-                    if(Object.prototype.toString.call(json[0][j])==='[object Object]'){
-                        //console.log(jsonObject);
+
+                    if(Object.prototype.toString.call(json[0][j])==='[object Object]'&&Object.prototype.toString.call(json[0][j])!=='[object String]'&&Object.prototype.toString.call(json[0][j])!=='[object Number]'){
+
                         this.FindJsonKey(json[0][j],current);
                     }
-                    if(Object.prototype.toString.call(json[0][j])==='[object Array]'){
+                    if(Object.prototype.toString.call(json[0][j])==='[object Array]'&&Object.prototype.toString.call(json[0][j])!=='[object String]'&&Object.prototype.toString.call(json[0][j])!=='[object Number]'){
+
                         if(Object.prototype.toString.call(json[0][j][0])==='[object String]'){
                             continue;
                         }
@@ -179,9 +318,21 @@ export default {
                 this.FindJsonKey(this.DataJSON,0);
                 let jsonObject=[];
                 jsonObject=JSONObject;
-
-
-                console.log(QueryArray);
+                for(let i=0;i<jsonObject.length;i++){
+                    let Children=[];
+                    for(let j=i+1;j<jsonObject.length;j++){
+                        if(jsonObject[i].ID===jsonObject[j].parentID){
+                            Children.push(jsonObject[j]);
+                        }
+                    }
+                    if(Children.length===0){
+                        jsonObject[i].NodeType="LeafNode";
+                    }
+                    else{
+                        jsonObject[i].NodeType="Node";
+                    }
+                    jsonObject[i].Children=Children;
+                }
                 //将用户输入的查询条件转换成 操作数与操作关系
                 for(let i=0; i<QueryArray.length;i++){
                     for(let j=0;j<jsonObject.length;j++){
@@ -197,8 +348,9 @@ export default {
                     let System_a_cut=0.8;
                     let NodeRelax=[];
                     NodeRelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
+                    let Weight;
                     if(NodeRelax.length!==0) {
-                        let Weight;
+
                         if (NodeRelax[0].nimp === "medium") {
                             Weight = 0.5;
                         }
@@ -389,14 +541,67 @@ export default {
                 console.log(pathExpression);
                 //JSONPath查询并返回结果
                 let result =this.QueryInJSON(this.DataJSON,pathExpression);
-
-
-
                 console.log(result);
+
+
+
+
+
+                this.Res=[];
+                this.TableData=[];
+                let TableIndexArray=[];
+
+                for(let i=0;i<jsonObject.length;i++){
+                    let TableIndex=[];
+                    TableIndex.name=jsonObject[i].Node;
+                    if(jsonObject[i].NodeType==="LeafNode") {
+                        let dataIndex = '.'+jsonObject[i].Node;
+                        let ParentNode = [];
+                        for (let j = 0; j < jsonObject.length; j++) {
+                            if (jsonObject[i].parentID === jsonObject[j].ID) {
+                                ParentNode = jsonObject[j];
+                            }
+                        }
+
+                        while (ParentNode.ID !== 1) {
+
+                            dataIndex = '.'+ParentNode.Node+dataIndex;
+                            for (let k = 0; k < jsonObject.length; k++) {
+
+                                if (ParentNode.parentID === jsonObject[k].ID) {
+                                    ParentNode = jsonObject[k];
+                                }
+                            }
+                        }
+                        //dataIndex = jsonObject[0].Node+dataIndex;
+                        TableIndex.dataIndex = dataIndex;
+                    }
+                    else{
+                        TableIndex.dataIndex="";
+                    }
+                    TableIndex.children=[];
+                    TableIndexArray.push(TableIndex);
+                }
+
+                for(let i=jsonObject.length-1;i>0;i--){
+                    TableIndexArray[jsonObject[i].parentID].children.push(TableIndexArray[jsonObject[i].ID]);
+                }
+
+
+
+                console.log(TableIndexArray[0]);
+                this.TableHead.push(TableIndexArray[0]);
+                this.TableData=result;
+
+                console.log(result[0].公司名)
+                console.log(this.TableData);
+                console.log(this.tableData3);
+
                 //缓存初始化
                 JSONObject.splice(0,JSONObject.length);
                 jsonObject.splice(0,jsonObject.length);
                 NodeId=0;
+
 
 
             }, response => {
@@ -445,5 +650,17 @@ export default {
     width: 50%;
     margin-top: 20%;
     margin-left: 27%;
+}
+    .demo-table-expand {
+    font-size: 0;
+}
+    .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+}
+    .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
 }
 </style>
