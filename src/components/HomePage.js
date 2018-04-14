@@ -1,10 +1,10 @@
 <template>
     <div class="main" v-model="GetKBJSON">
         <el-input v-model="Input" placeholder="输入查询内容" class="input_text" @keyup.enter.native="GetResult"></el-input>
-    <el-table :data="TableData" border style="width: 100%" >
+    <el-table :data="TableData" border class="output_table">
     <template v-for="item in TableHead">
         <TableHeadConfig v-if="item.children&&item.children.length>0" :model="item"></TableHeadConfig>
-    <el-table-column v-else  :key="item.name" :label="item.name" :prop="item.dataIndex" >
+    <el-table-column v-else  :key="item.name" :label="item.name" :prop="item.dataIndex"  >
 </el-table-column>
 </template>
 </el-table>
@@ -30,150 +30,7 @@ export default {
             DataJSON: '',
             TableData: [],
             TableHead: [],
-            Res: [],
-            headerData: [
-                {
-                    name: '日期',
-                    dataIndex: 'date',
-                    children: []
-                },
-                {
-                    name: '配置信息',
-                    dataIndex: '',
-                    children: [
-                        {
-                            name: 'man',
-                            dataIndex: '',
-                            children: [
-                                {
-                                    name: '性别',
-                                    dataIndex: "男人.性别",
-                                    children: []
-                                },
-                                {
-                                    name: '年龄',
-                                    dataIndex: '男人.年龄',
-                                    children: []
-                                }
-                            ]
-                        },
-                        {
-                            name: '最终地址',
-                            dataIndex: '',
-                            children: [
-                                {
-                                    name: '省份',
-                                    dataIndex: 'province',
-                                    children: [
-                                        {
-                                            name: '省份1',
-                                            dataIndex: 'province',
-                                            children: []
-                                        },
-                                        {
-                                            name: '省份2',
-                                            dataIndex: 'province',
-                                            children: []
-                                        }
-                                    ]
-                                },
-                                {
-                                    name: '市区',
-                                    dataIndex: 'city',
-                                    children: []
-                                },
-                                {
-                                    name: '地址',
-                                    dataIndex: 'address',
-                                    children: []
-                                },
-                                {
-                                    name: '邮编',
-                                    dataIndex: 'zip',
-                                    children: []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
-
-            tableData3: [{
-                date: '2016-05-03',
-                "男人":
-                    {
-                        "性别": '男',
-                        "年龄": 18,
-                    }
-                ,
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }, {
-                date: '2016-05-02',
-                name: '王小虎',
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }, {
-                date: '2016-05-04',
-                name: '王小虎',
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }, {
-                date: '2016-05-01',
-                name: '王小虎',
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }, {
-                date: '2016-05-08',
-                name: '王小虎',
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }, {
-                date: '2016-05-06',
-                name: '王小虎',
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }, {
-                date: '2016-05-07',
-                name: '王小虎',
-                province: '上海',
-                city: '普陀区',
-                address: '上海市普陀区金沙江路 1518 弄',
-                zip: 200333
-            }],
-            data4:[
-                {
-                    "注册公司信息库": {
-                        "公司信息": [
-                            {
-                                "公司名": "南航",
-                                "年龄": 88,
-                                "地址": {
-                                    "街道": 20,
-                                    "城市": "江苏苏州",
-                                    "国家": "中国"
-                                },
-                                "链接": {
-                                    "名称": "Google",
-                                    "网址": 30
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
+            Res: []
         }
 
     },
@@ -249,21 +106,24 @@ export default {
             return RetureQueryResult;
         },
         GetResult(){
+
+            //显示初始化
+            this.TableData=[];
+            this.TableHead=[];
+            this.Res=[];
+
+
             //处理模糊条件
             let QueryArray=new Array();
             QueryArray=this.Input.split('，');
-//            三种模糊关系的检测
-//            1、 ( not) close to (around)
-//            2、 ( not) at most
-//            3、 ( not) at least
-//
+
             let Close_Check=new RegExp("(接近|临近)");
             let Most_Check=new RegExp("(最多|至多|顶多|不超过)");
             let Least_Check=new RegExp("(最少|至少)");
             let Section_Check=new RegExp("(~|之间)");
 //              let Number_Check=new RegExp("[+-]?(0|([1-9]\d*))(\.\d+)?","g");
             let Number_Check=new RegExp("[0-9]+(\.[0-9]+)?","g");
-            let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重)");
+            let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重|低|高)");// FuzzyTerm
             let Very_Check=new RegExp("(非常)");// very
             let More_or_Less_Check = new RegExp("(较)");//more or less;
             let Not_Check=new RegExp("[/不]");
@@ -325,8 +185,28 @@ export default {
                             Children.push(jsonObject[j]);
                         }
                     }
+
+                    //叶子节点到根节点的路径
+                    let ParentNode=[];
+                    let LeafPath;
                     if(Children.length===0){
                         jsonObject[i].NodeType="LeafNode";
+                        LeafPath='["'+jsonObject[i].Node+'"]'
+                        for(let k=0;k<jsonObject.length;k++){
+                            if(jsonObject[i].parentID===jsonObject[k].ID){
+                                ParentNode=jsonObject[k];
+                            }
+                        }
+                        while(ParentNode.ID!==1){
+
+                            LeafPath='["'+ParentNode.Node+'"]'+LeafPath;
+                            for(let k=0;k<jsonObject.length;k++){
+                                if(ParentNode.parentID===jsonObject[k].ID){
+                                    ParentNode=jsonObject[k];
+                                }
+                            }
+                        }
+                        jsonObject[i].NodePath=LeafPath;
                     }
                     else{
                         jsonObject[i].NodeType="Node";
@@ -341,6 +221,7 @@ export default {
                         }
                     }
                 }
+
 
                 //  （！！！此处进行模糊查询扩展！！！）
                 for(let i=0;i<QueryArray.length;i++){
@@ -412,7 +293,6 @@ export default {
                         QueryArray[i].QueryNumber=ExtendNumber;
                         QueryArray[i].Operator=Operator;
                     }
-                    //  A between Y1  and  Y2
                     if(QueryArray[i].QueryType==="between"){
                         let fterm=[];
                         let Num=[];
@@ -453,7 +333,6 @@ export default {
                         console.log(ExtendNumber);
 
                     }
-                    //
                     if(QueryArray[i].QueryType==="query"){
                         if(QueryArray[i].NumberType==="fuzzy"){
                             let fterm=[];
@@ -491,6 +370,7 @@ export default {
                             ExtendNumber.push(S2);
                             QueryArray[i].QueryNumber=ExtendNumber;
                             QueryArray[i].Operator=Operator;
+                            console.log("ok")
                         }
                         else if(QueryArray[i].NumberType==="number"){
                             QueryArray[i].Operator="==";
@@ -498,34 +378,15 @@ export default {
                     }
                 }
 
-                //将 操作数与操作关系转换成 JSONPath表达式 （精确模式）  //普通查询的Operator ==
+                //将 操作数与操作关系转换成 JSONPath表达式 （精确模式）
                 for(let i=0;i<QueryArray.length;i++){
                     let pathExp;
                     if(QueryArray[i].QueryNumber.length>1){
-                        pathExp='["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator[0]+'"'+QueryArray[i].QueryNumber[0]+'"'+'&&@'+'["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator[1]+'"'+QueryArray[i].QueryNumber[1]+'"';
+                        pathExp=QueryArray[i].JSONLocation.NodePath+QueryArray[i].Operator[0]+'"'+QueryArray[i].QueryNumber[0]+'"'+'&&@'+QueryArray[i].JSONLocation.NodePath+QueryArray[i].Operator[1]+'"'+QueryArray[i].QueryNumber[1]+'"';
                     }
                     else{
-                        pathExp='["'+QueryArray[i].JSONLocation.Node+'"]'+QueryArray[i].Operator+'"'+QueryArray[i].QueryNumber+'"';
+                        pathExp=QueryArray[i].JSONLocation.NodePath+QueryArray[i].Operator+'"'+QueryArray[i].QueryNumber+'"'
                     }
-                    let ParentNode=[];
-
-                    for(let j=0;j<jsonObject.length;j++){
-                        if(QueryArray[i].JSONLocation.parentID===jsonObject[j].ID){
-                            ParentNode=jsonObject[j];
-                        }
-                    }
-
-                    while(ParentNode.ID!==1){
-
-                        pathExp='["'+ParentNode.Node+'"]'+pathExp;
-                        for(let k=0;k<jsonObject.length;k++){
-
-                            if(ParentNode.parentID===jsonObject[k].ID){
-                                ParentNode=jsonObject[k];
-                            }
-                        }
-                    }
-
                     QueryArray[i].PathExp=pathExp;
 
 
@@ -543,14 +404,8 @@ export default {
                 let result =this.QueryInJSON(this.DataJSON,pathExpression);
                 console.log(result);
 
-
-
-
-
-                this.Res=[];
-                this.TableData=[];
+                //表头
                 let TableIndexArray=[];
-
                 for(let i=0;i<jsonObject.length;i++){
                     let TableIndex=[];
                     TableIndex.name=jsonObject[i].Node;
@@ -582,20 +437,11 @@ export default {
                     TableIndex.children=[];
                     TableIndexArray.push(TableIndex);
                 }
-
                 for(let i=jsonObject.length-1;i>0;i--){
                     TableIndexArray[jsonObject[i].parentID].children.push(TableIndexArray[jsonObject[i].ID]);
                 }
-
-
-
-                console.log(TableIndexArray[0]);
                 this.TableHead.push(TableIndexArray[0]);
                 this.TableData=result;
-
-                console.log(result[0].公司名)
-                console.log(this.TableData);
-                console.log(this.tableData3);
 
                 //缓存初始化
                 JSONObject.splice(0,JSONObject.length);
@@ -646,21 +492,13 @@ export default {
     position:absolute;
 }
     .input_text{
-    margin:20%;
     width: 50%;
-    margin-top: 20%;
-    margin-left: 27%;
+    top:30%
 }
-    .demo-table-expand {
-    font-size: 0;
-}
-    .demo-table-expand label {
-    width: 90px;
-    color: #99a9bf;
-}
-    .demo-table-expand .el-form-item {
-    margin-right: 0;
-    margin-bottom: 0;
-    width: 50%;
+    .output_table{
+    width: 80%;
+    position:absolute;
+    top:40%;
+    left: 10%;
 }
 </style>
