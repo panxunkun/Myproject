@@ -1,0 +1,256 @@
+{
+  "Relaxation":{
+    "relax":[
+      {
+        "leaf_node":"价格",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.019,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"价格",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.019,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"价格",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.05714,
+        "rdegrel":0.05714,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"面积",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.12,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"面积",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.09,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"面积",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.05,
+        "rdegrel":0.05,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"房龄",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.019,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"房龄",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.019,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"房龄",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.023,
+        "rdegrel":0.023,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"阳台",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.009,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"阳台",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.009,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"阳台",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.005,
+        "rdegrel":0.005,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"楼层",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.012,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"楼层",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.012,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"楼层",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.005,
+        "rdegrel":0.005,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"卧室",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.2,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"卧室",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.3,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"卧室",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.056,
+        "rdegrel":0.056,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"卫生间",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.019,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"卫生间",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.019,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"卫生间",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.05714,
+        "rdegrel":0.05714,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"社区",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.01,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"社区",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.019,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"社区",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.05714,
+        "rdegrel":0.05714,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      },
+
+      {
+        "leaf_node":"学校",
+        "operator":"at most",
+        "directionrel":"right",
+        "ldegrel":"",
+        "rdegrel":0.009,
+        "lsatisfy":"nondecr",
+        "rsatisfy":"decr"
+      },
+      {
+        "leaf_node":"学校",
+        "operator":"at least",
+        "directionrel":"left",
+        "ldegrel":0.009,
+        "rdegrel":"",
+        "lsatisfy":"decr",
+        "rsatisfy":"nondecr"
+      },
+      {
+        "leaf_node":"学校",
+        "operator":"close to",
+        "directionrel":"left,right",
+        "ldegrel":0.005,
+        "rdegrel":0.0057,
+        "lsatisfy":"decr",
+        "rsatisfy":"decr"
+      }
+    ]
+  }
+}
