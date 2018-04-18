@@ -27,6 +27,7 @@ export default {
             RelaxationJOSN: '',
             FuzzyTermJSON: '',
             NodeRelaxJSON: '',
+            NodeImportanceJSON:'',
             DataJSON: '',
             TableData: [],
             TableHead: [],
@@ -75,13 +76,11 @@ export default {
         },
         FindInRelaxationJSON:function (NodeName,QueryType) {
             let jsonExp='$["Relaxation"]["relax"][?(@["leaf_node"]=="'+NodeName+'"&&@["operator"]=="'+QueryType+'")]';
-            console.log(jsonExp);
             let Direction_Satisfaction=this.QueryInJSON(this.RelaxationJOSN,jsonExp);
             console.log(Direction_Satisfaction);
             return Direction_Satisfaction;
         },
         FindInFuzzyTermJSON:function(NodeName,QueryNumber){
-            console.log(NodeName,QueryNumber);
             let FuzzyTerms=[];
             let jsonExp;
             if(QueryNumber===undefined){
@@ -98,8 +97,12 @@ export default {
         FindInNodeRelaxJSON:function(NodeName){
             let jsonExp='$["NodeRelax"]["nrelax"][?(@["leaf_node"]=="'+NodeName+'")]';
             let Noderelax=this.QueryInJSON(this.NodeRelaxJSON,jsonExp);
-            console.log(Noderelax);
             return Noderelax;
+        },
+        FindNodeImportanceJSON:function(NodeName,nimp) {
+            let jsonExp = '$["NodeImportance"]["nimportance"][?(@["leaf_node"]=="' + NodeName + '"&&@["nimp"]=="'+nimp+'")]';
+            let nodeImportance = this.QueryInJSON(this.NodeImportanceJSON, jsonExp);
+            return nodeImportance;
         },
         QueryInJSON:function (js,jsonExp) {
             let RetureQueryResult = jp.query(js,jsonExp);
@@ -122,8 +125,8 @@ export default {
             let Least_Check=new RegExp("(最少|至少)");
             let Section_Check=new RegExp("(~|之间)");
 //              let Number_Check=new RegExp("[+-]?(0|([1-9]\d*))(\.\d+)?","g");
-            let Number_Check=new RegExp("[0-9]+(\.[0-9]+)?","g");
-            let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重|低|高)");// FuzzyTerm
+            let Number_Check=new RegExp("[1-9][0-9]+","g");
+            let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重|低|高)","g");// FuzzyTerm
             let Very_Check=new RegExp("(非常)");// very
             let More_or_Less_Check = new RegExp("(较)");//more or less;
             let Not_Check=new RegExp("[/不]");
@@ -154,17 +157,18 @@ export default {
                 }
                 else if(fuzzy_num!==null){
                     Query.QueryNumber=fuzzy_num;
-                    Query.NumberType="fuzzy"
+                    Query.NumberType="fuzzy";
+                    if(Very_Check.test(QueryArray[QueryNum])===true){
+                        Query.FuzzyDegree="very";
+                    }
+                    else if(More_or_Less_Check.test(QueryArray[QueryNum])===true){
+                        Query.FuzzyDegree="more or less";
+                    }
+                    else{
+                        Query.FuzzyDegree="normal";
+                    }
                 }
-                if(Very_Check.test(QueryArray[QueryNum])===true){
-                    Query.FuzzyDegree="very";
-                }
-                else if(More_or_Less_Check.test(QueryArray[QueryNum])===true){
-                    Query.FuzzyDegree="more or less";
-                }
-                else{
-                    Query.FuzzyDegree="normal";
-                }
+
                 QueryArray[QueryNum]=Query;
             }
             let js_string;
@@ -228,18 +232,10 @@ export default {
                     //隶属函数形状确定
                     let System_a_cut=0.8;
                     let NodeRelax=[];
+
                     NodeRelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
-                    let Weight;
-                    if(NodeRelax.length!==0) {
-
-                        if (NodeRelax[0].nimp === "medium") {
-                            Weight = 0.5;
-                        }
-                        else if (NodeRelax[0].nimp === "high") {
-                            Weight = 0.8;
-                        }
-
-                    }
+                    let Mdegree=this.FindNodeImportanceJSON(QueryArray[i].JSONLocation.Node,NodeRelax[0].nimp);
+                    let Weight=Mdegree[0].mdegree;
 
                     if(QueryArray[i].QueryType==="at most"){
                         let degrel;
@@ -464,21 +460,25 @@ export default {
                 console.log(this.RelaxationJOSN);
 
             },response =>{
-                console.log("get NodeRelaxJSON fail");
+                //console.log("get NodeRelaxJSON fail");
             });
             this.$http.get('/static/FuzzyTerm.json').then(response => {
                 this.FuzzyTermJSON = response.data;
-                // let js_string=JSON.stringify(response2.data);
-                //  this.FuzzyTermJSON=JSON.parse(js_string);
-                console.log(this.FuzzyTermJSON);
+                //console.log(this.FuzzyTermJSON);
             },response => {
-                console.log("get FuzzyTermJSON fail");
+                //console.log("get FuzzyTermJSON fail");
             });
             this.$http.get('/static/NodeRelax.json').then(response => {
                 this.NodeRelaxJSON = response.data;
-                console.log(this.NodeRelaxJSON);
+                //console.log(this.NodeRelaxJSON);
             },response => {
                 console.log("get RelaxationJOSN fail");
+            });
+            this.$http.get('/static/NodeImportance.json').then(response => {
+                this.NodeImportanceJSON = response.data;
+                //console.log(this.NodeImportanceJSON);
+            },response => {
+                console.log("get NodeImportanceJSON fail");
             });
         }
     }
