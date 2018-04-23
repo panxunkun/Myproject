@@ -97,6 +97,7 @@
             FindInNodeRelaxJSON:function(NodeName){
                 let jsonExp='$["NodeRelax"]["nrelax"][?(@["leaf_node"]=="'+NodeName+'")]';
                 let Noderelax=this.QueryInJSON(this.NodeRelaxJSON,jsonExp);
+
                 return Noderelax;
             },
             FindNodeImportanceJSON:function(NodeName,nimp) {
@@ -119,21 +120,22 @@
                 //处理模糊条件
                 let QueryArray=new Array();
                 QueryArray=this.Input.split('，');
-
+                let Exact_Check=new RegExp("(是|为)");
                 let Close_Check=new RegExp("(接近|临近)");
                 let Most_Check=new RegExp("(最多|至多|顶多|不超过)");
                 let Least_Check=new RegExp("(最少|至少)");
                 let Section_Check=new RegExp("(~|之间)");
 //              let Number_Check=new RegExp("[+-]?(0|([1-9]\d*))(\.\d+)?","g");
-                let Number_Check=new RegExp("[0-9]+(\.[0-9]+)?","g");
-                let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重|低|高)");// FuzzyTerm
+                let Number_Check=new RegExp("[0-9]+","g");
+                let FuzzyNumber_Check=new RegExp("(多|少|近|远|轻|重|低|高)","g");// FuzzyTerm
                 let Very_Check=new RegExp("(非常)");// very
                 let More_or_Less_Check = new RegExp("(较)");//more or less;
-                let Not_Check=new RegExp("[/不]");
+//              let Not_Check=new RegExp("[/不]");
+
                 //查询条件处理
                 for(let QueryNum=0;QueryNum<QueryArray.length;QueryNum++){
                     let Query={};
-                    Query.Contain=QueryArray[QueryNum];
+                    Query.Contain=QueryArray[QueryNum].replace(/\d+/g,);
                     if(Close_Check.test(QueryArray[QueryNum])===true){
                         Query.QueryType="close to";
                     }
@@ -151,91 +153,132 @@
                     }
                     let num=QueryArray[QueryNum].match(Number_Check);
                     let fuzzy_num=QueryArray[QueryNum].match(FuzzyNumber_Check);
+
                     if(num!==null){
-                        Query.QueryNumber=num;
-                        Query.NumberType="number"
+                          Query.QueryNumber=num;
+                          Query.NumberType="number"
                     }
                     else if(fuzzy_num!==null){
-                        Query.QueryNumber=fuzzy_num;
-                        Query.NumberType="fuzzy"
+                          Query.QueryNumber=fuzzy_num;
+                          Query.NumberType="fuzzy";
+                        if(Very_Check.test(QueryArray[QueryNum])===true){
+                          Query.FuzzyDegree="very";
+                        }
+                        else if(More_or_Less_Check.test(QueryArray[QueryNum])===true){
+                          Query.FuzzyDegree="more or less";
+                        }
+                        else{
+                          Query.FuzzyDegree="normal";
+                        }
                     }
-                    if(Very_Check.test(QueryArray[QueryNum])===true){
-                        Query.FuzzyDegree="very";
+                    else if(Exact_Check.test(QueryArray[QueryNum])===true){
+                          let Exact=QueryArray[QueryNum].split('是');
+                          Query.QueryType="exact";
+                          let ExactObject=[];
+                          ExactObject.push(Exact[1]);
+                          Query.QueryNumber=ExactObject;
+                          console.log(ExactObject);
                     }
-                    else if(More_or_Less_Check.test(QueryArray[QueryNum])===true){
-                        Query.FuzzyDegree="more or less";
-                    }
-                    else{
-                        Query.FuzzyDegree="normal";
-                    }
+
                     QueryArray[QueryNum]=Query;
                 }
-                let js_string;
+                console.log(QueryArray);
                 let json=new Array();
 
                 //本地JSON文件模拟访问后台JSON文件
                 this.$http.get('./static/JSONData.json').then(response => {
+                //this.$http.get('./static/1.json').then(response => {
                     //json字符串转换成json对象
                     this.DataJSON=response.data;
 
                     this.FindJsonKey(this.DataJSON,0);
                     let jsonObject=[];
                     jsonObject=JSONObject;
-                    for(let i=0;i<jsonObject.length;i++){
-                    let Children=[];
-                    for(let j=i+1;j<jsonObject.length;j++){
-                      if(jsonObject[i].ID===jsonObject[j].parentID){
-                        Children.push(jsonObject[j]);
-                      }
-                    }
-
-                    //叶子节点到根节点的路径
-                    let ParentNode=[];
-                    let LeafPath;
-                    if(Children.length===0){
-                      jsonObject[i].NodeType="LeafNode";
-                      LeafPath='["'+jsonObject[i].Node+'"]'
-                      for(let k=0;k<jsonObject.length;k++){
-                        if(jsonObject[i].parentID===jsonObject[k].ID){
-                          ParentNode=jsonObject[k];
+                    //表头以及JSON结构处理
+                    let TableIndexArray=[];
+                    for(let i=0;i<jsonObject.length;i++) {
+                      let Children = [];
+                      for (let j = i + 1; j < jsonObject.length; j++) {
+                        if (jsonObject[i].ID === jsonObject[j].parentID) {
+                          Children.push(jsonObject[j]);
                         }
                       }
-                      while(ParentNode.ID!==1){
 
-                        LeafPath='["'+ParentNode.Node+'"]'+LeafPath;
-                        for(let k=0;k<jsonObject.length;k++){
-                          if(ParentNode.parentID===jsonObject[k].ID){
-                            ParentNode=jsonObject[k];
+                      //叶子节点到根节点的路径
+                      let ParentNode1 = [];
+                      let ParentNode2 = []
+                      let LeafPath;
+                      let Secparent = [];//次根父节点
+
+
+                      let TableIndex = []; //表头
+                      TableIndex.name = jsonObject[i].Node;
+                      if (Children.length === 0) {
+                        jsonObject[i].NodeType = "LeafNode";
+                        LeafPath = '["' + jsonObject[i].Node + '"]'
+                        let dataIndex = '.' + jsonObject[i].Node;  //表头dataIndex
+                        for (let j = 0; j < jsonObject.length; j++) {
+                          if (jsonObject[i].parentID === jsonObject[j].ID) {
+                            ParentNode1 = jsonObject[j];
+                            ParentNode2 = jsonObject[j];
                           }
                         }
+                        while (ParentNode1.ID !== 0) {
+                          Secparent = ParentNode1;
+                          //LeafPath='["'+ParentNode.Node+'"]'+LeafPath;
+                          for (let k = 0; k < jsonObject.length; k++) {
+                            if (ParentNode1.parentID === jsonObject[k].ID) {
+                              ParentNode1 = jsonObject[k];
+                            }
+                          }
+                        }
+                        while (ParentNode2.ID !== Secparent.ID) {
+                          LeafPath = '["' + ParentNode2.Node + '"]' + LeafPath;
+                          dataIndex = '.' + ParentNode2.Node + dataIndex;
+                          for (let k = 0; k < jsonObject.length; k++) {
+                            if (ParentNode2.parentID === jsonObject[k].ID) {
+                              ParentNode2 = jsonObject[k];
+                            }
+                          }
+                        }
+                        jsonObject[i].SecParent = Secparent.Node;
+                        jsonObject[i].NodePath = LeafPath;
+                        TableIndex.dataIndex = dataIndex;
                       }
-                      jsonObject[i].NodePath=LeafPath;
-                    }
-                    else{
-                      jsonObject[i].NodeType="Node";
-                    }
-                    jsonObject[i].Children=Children;
+                      else {
+                        jsonObject[i].NodeType = "Node";
+                        TableIndex.dataIndex = ""
+                      }
+                      jsonObject[i].Children = Children;
+                      TableIndex.children = [];
+                      TableIndexArray.push(TableIndex);
                     }
                     //将用户输入的查询条件转换成 操作数与操作关系
                     for(let i=0; i<QueryArray.length;i++){
                         for(let j=0;j<jsonObject.length;j++){
+
                             if(QueryArray[i].Contain.indexOf(jsonObject[j].Node)>=0){
                                 QueryArray[i].JSONLocation=jsonObject[j];
                             }
                         }
                     }
 
-
-                    //  （！！！此处进行模糊查询扩展！！！）
+                    //查询条件处理以及进行模糊查询扩展
                     for(let i=0;i<QueryArray.length;i++){
+                        if(QueryArray[i].NumberType==="number"){
+                            QueryArray[i].Operator="==";
+                            continue;
+                        }
+                        if(QueryArray[i].QueryType==="exact"){
+                            QueryArray[i].Operator="==";
+                            continue;
+                        }
                         //隶属函数形状确定
                         let System_a_cut=0.8;
                         let NodeRelax=[];
-
                         NodeRelax=this.FindInNodeRelaxJSON(QueryArray[i].JSONLocation.Node);
                         let Mdegree=this.FindNodeImportanceJSON(QueryArray[i].JSONLocation.Node,NodeRelax[0].nimp);
                         let Weight=Mdegree[0].mdegree;
-
                         if(QueryArray[i].QueryType==="at most"){
                             let degrel;
                             let Direction_and_Satisfaction=this.FindInRelaxationJSON(QueryArray[i].JSONLocation.Node,QueryArray[i].QueryType);
@@ -367,9 +410,6 @@
                                 QueryArray[i].Operator=Operator;
                                 console.log("ok")
                             }
-                            else if(QueryArray[i].NumberType==="number"){
-                                QueryArray[i].Operator="==";
-                            }
                         }
                     }
 
@@ -388,50 +428,15 @@
                     }
 
                     //获取JSONPath查询的表达式
-                    let pathExpression='$["'+jsonObject[0].Node+'"]["'+jsonObject[1].Node+'"][?('+'@'+QueryArray[0].PathExp;
+                    let pathExpression='$["'+jsonObject[0].Node+'"]["'+QueryArray[0].JSONLocation.SecParent+'"][?('+'@'+QueryArray[0].PathExp;
                     for(let i=1;i<QueryArray.length;i++){
                         pathExpression+='&&@'+QueryArray[i].PathExp;
                     }
                     pathExpression+=')]';
-
                     console.log(pathExpression);
+
                     //JSONPath查询并返回结果
                     let result =this.QueryInJSON(this.DataJSON,pathExpression);
-                    console.log(result);
-
-                    //表头
-                    let TableIndexArray=[];
-                    for(let i=0;i<jsonObject.length;i++){
-                      let TableIndex=[];
-                      TableIndex.name=jsonObject[i].Node;
-                      if(jsonObject[i].NodeType==="LeafNode") {
-                        let dataIndex = '.'+jsonObject[i].Node;
-                        let ParentNode = [];
-                        for (let j = 0; j < jsonObject.length; j++) {
-                          if (jsonObject[i].parentID === jsonObject[j].ID) {
-                            ParentNode = jsonObject[j];
-                          }
-                        }
-
-                        while (ParentNode.ID !== 1) {
-
-                          dataIndex = '.'+ParentNode.Node+dataIndex;
-                          for (let k = 0; k < jsonObject.length; k++) {
-
-                            if (ParentNode.parentID === jsonObject[k].ID) {
-                              ParentNode = jsonObject[k];
-                            }
-                          }
-                        }
-                        //dataIndex = jsonObject[0].Node+dataIndex;
-                        TableIndex.dataIndex = dataIndex;
-                      }
-                      else{
-                        TableIndex.dataIndex="";
-                      }
-                      TableIndex.children=[];
-                      TableIndexArray.push(TableIndex);
-                    }
                     for(let i=jsonObject.length-1;i>0;i--){
                         TableIndexArray[jsonObject[i].parentID].children.push(TableIndexArray[jsonObject[i].ID]);
                     }
@@ -459,23 +464,23 @@
                     console.log(this.RelaxationJOSN);
 
                 },response =>{
-                     //console.log("get NodeRelaxJSON fail");
+                     console.log("get NodeRelaxJSON fail");
                 });
                 this.$http.get('/static/FuzzyTerm.json').then(response => {
                     this.FuzzyTermJSON = response.data;
-                    //console.log(this.FuzzyTermJSON);
+                    console.log(this.FuzzyTermJSON);
                 },response => {
-                    //console.log("get FuzzyTermJSON fail");
+                    console.log("get FuzzyTermJSON fail");
                 });
                 this.$http.get('/static/NodeRelax.json').then(response => {
                     this.NodeRelaxJSON = response.data;
-                    //console.log(this.NodeRelaxJSON);
+                    console.log(this.NodeRelaxJSON);
                 },response => {
                     console.log("get RelaxationJOSN fail");
                 });
                 this.$http.get('/static/NodeImportance.json').then(response => {
                 this.NodeImportanceJSON = response.data;
-                   //console.log(this.NodeImportanceJSON);
+                   console.log(this.NodeImportanceJSON);
                 },response => {
                    console.log("get NodeImportanceJSON fail");
                 });
